@@ -1,4 +1,4 @@
----
+<!-- # --- -->
 title: "ADPS 2025Z --- Laboratorium 1 (rozwiązania)"
 author: "Tu wpisz imię i nazwisko"
 output:
@@ -151,7 +151,6 @@ grid()
 kat$Year = strftime(as.Date(kat$Date, '%m/%d/%Y'), '%Y')
 # Agregacja danych po latach:
 Ocaleni = aggregate((Aboard - Fatalities) ~ Year, kat, FUN = sum)
-
 # Wykres:
 plot(Ocaleni, type = 'h', col = 'blue',xlab = 'Rok',
 ylab = 'Lczba ocalałych', main = 'Liczba osób, które przeżyły katastrofy' )
@@ -159,15 +158,13 @@ grid()
 ```
 -   odsetek osób (w procentach), które przeżyły katastrofy.
 ```{r}
-# kat$Year = strftime(as.Date(kat$Date, '%m/%d/%Y'), '%Y')
-# Agregacja danych po latach:
-Odsetek_ocalałych = aggregate((((Aboard - Fatalities)/Aboard)*100) ~ Year, kat, FUN = sum)
-# Wykres:
-plot(Odsetek_ocalałych, type = 'h', col = 'blue',xlab = 'Rok',
-ylab = 'Odsetek ocalałych', main = 'Odsetek osób, które przeżyły katastrofy' )
+Odsetek_ocalonych = aggregate(((Aboard - Fatalities) / Aboard * 100) ~ Year, kat, FUN = mean)
+plot(Odsetek_ocalonych, type = 'h', col = 'blue',
+  xlab = 'Rok', ylab = 'Odsetek ocalałych (%)',
+  main = 'Odsetek osób, które przeżyły katastrofy'
+)
 grid()
 ```
-
 ## Rozwiązanie
 
 Tu umieść swoje rozwiązanie
