@@ -1,0 +1,285 @@
+---
+title: "ADPS 2025Z --- Laboratorium 1"
+author: "Konrad Jędrzejewski, Marek Rupniewski"
+output:
+  pdf_document:
+   latex_engine: xelatex
+  html_notebook: default
+  html_document: default
+---
+
+```{r, echo=FALSE}
+pdf.options(encoding='ISOLatin2')
+```
+
+# Przykład 1
+
+## Pobranie danych
+
+* W katalogu domowym utwórz katalog ADPS/Lab1. W tym celu w RStudio w prawym dolnym oknie w zakładce *Files* wybierz *New Folder*. 
+
+W RStudio zmień katalog roboczy na ADPS/Lab1. W zakładce *Files* wybierz *More -> Set As Working Directory*
+
+* Znajdź i pobierz dane historyczne spółki KGHM (KGH) ze strony https://stooq.pl/: 
+
+```{r}
+# https://stooq.pl/q/d/l/?s=kgh&i=d
+Ticket = 'KGH'
+webLink = paste0('https://stooq.pl/q/d/l/?s=', Ticket, '&i=d')
+fileName = paste0(Ticket, '.csv')
+# if(!file.exists(fileName)) {
+  download.file(webLink, fileName)
+#}
+```
+## Wykres kursu w czasie
+
+* Wczytaj dane z pliku .csv. Obejrzyj dane dotyczące spółki KGHM, zwróć uwagę na nazwy kolumn.
+* Narysuj wykres kursu otwarcia w zależności od daty:
+```{r}
+df_KGH = read.csv('KGH.csv')
+df_KGH$Data = as.Date(df_KGH$Data)
+plot(Otwarcie ~ Data, df_KGH, type = 'l', col = 'blue',
+      xlab = 'Data', ylab = 'Kurs otwarcia [zł]', main = 'KGHM' )
+grid()
+```
+
+## Procentowe zmiany kursu
+
+* Wykres procentowych zmian kursu otwarcia:
+```{r}
+df_KGH$Otwarcie_zm = with(df_KGH, c(NA, 100*diff(Otwarcie)/Otwarcie[-length(Otwarcie)]))
+plot(Otwarcie_zm ~ Data, df_KGH, type = 'l', col = 'blue', xlab = 'Data', 
+     ylab = 'Procentowa zmiana kursu otwarcia [%]', main = 'KGHM')
+grid()
+```
+
+## Ograniczenie danych do danych z ostatnich dwóch lat
+
+```{r}
+df_KGH_2lata = df_KGH[which(df_KGH$Data >= '2023-10-16' & df_KGH$Data <= Sys.Date()),]
+plot(Otwarcie_zm ~ Data, df_KGH_2lata, type = 'l', col = 'blue', xlab = 'Data',  
+     ylab = 'Procentowa zmiana kursu otwarcia [%]', main = 'KGHM')
+grid()
+```
+
+## Histogram
+
+* Histogram procentowych zmian kursu otwarcia:
+```{r}
+hist(df_KGH_2lata$Otwarcie_zm, breaks = 50, prob = T,
+  xlab = 'Zmiana kursu otwarcia [%] ',
+  ylab = 'Częstość występowania',
+  main = paste('Histogram procentowych zmian kursu', 'KGHM')  )
+grid()
+```
+
+## Funkcja gęstości prawdopodobieństwa
+
+* Wartość średnia oraz odchylenie standardowe zmian kursu otwarcia:
+```{r}
+m = mean(df_KGH_2lata$Otwarcie_zm, na.rm = T)
+s = sd(df_KGH_2lata$Otwarcie_zm, na.rm = T)
+```
+
+Wartość średnia zmian kursu otwarcia wynosi `r  round(m, digits = 4)` %, a odchylenie standardowe `r round(s, digits = 4)` %.
+
+* Dorysowanie do histogramu wykres gęstości rozkładu normalnego o obliczonych parametrach:
+
+```{r}
+hist(df_KGH_2lata$Otwarcie_zm, breaks = 50, prob = T,
+  xlab = 'Zmiana kursu otwarcia [%] ',
+  ylab = 'Częstość występowania',
+  main = paste('Histogram procentowych zmian kursu', 'KGHM')  )
+grid()
+min_c = min(df_KGH_2lata$Otwarcie_zm, na.rm = T)
+max_c = max(df_KGH_2lata$Otwarcie_zm, na.rm = T)
+curve(dnorm(x, mean = m, sd = s), add = T, col = 'red', from = min_c, to = max_c)
+```
+
+##  Wykres pudełkowy
+
+* Wykres pudełkowy procentowych zmian kursu otwarcia:
+```{r}
+boxplot(df_KGH_2lata$Otwarcie_zm, col = 'green',
+  xlab = 'KGHM', ylab = 'Zmiana kursu otwarcia [%] ',
+  main = 'KGHM' )
+grid()
+```
+
+***
+
+# Przykład 2
+
+## Pobranie danych
+
+* Wgraj dane historyczne dotyczące katastrof lotniczych znajdujące się w pliku crashes.csv do katalogu ADPS/Lab1.
+
+* Wczytaj dane z pliku crashes.csv do środowiska R:
+```{r}
+kat = read.csv('crashes.csv')
+```
+
+* Obejrzyj dane, zwróć uwagę na puste pola.
+
+## Liczba wypadków w latach
+
+* Dodanie do danych kolumny z rokiem:
+```{r}
+kat$Year = strftime(as.Date(kat$Date, '%m/%d/%Y'), '%Y')
+```
+
+* Wykres liczby wypadków w danym roku:
+```{r}
+plot(table(kat$Year), type = 'h', col = 'blue', xlab = 'Rok', 
+ylab = 'Liczba katastrof', main = 'Liczba katastrof w roku' )
+grid()
+```
+
+## Liczba ofiar w latach
+
+* Agregacja danych po latach:
+```{r}
+Ofiary_agr = aggregate(Fatalities ~ Year, kat, FUN = sum)
+```
+
+* Wykres:
+```{r}
+plot(Ofiary_agr, type = 'h', col = 'blue',xlab = 'Rok', 
+     ylab = 'Lczba ofiar', main = 'Liczba ofiar katastrof w roku' )
+grid()
+```
+
+***
+
+# Przykład 3
+
+* Generacja 1000 próbek z rozkładu normalnego N(2,9):
+```{r}
+proba = rnorm(1000, mean = 2, sd = 3)
+plot(proba)
+```
+
+* Wartości parametrów z próby
+```{r, echo = TRUE}
+m = mean(proba); s = sd(proba)
+```
+
+Wyestymowane parametry rozkładu wynoszą: wartość średnia `r round(m, digits = 4)`, wariancja `r round(s^2, digits = 4)`.
+
+* Histogram i gęstość prawdopodobieństwa:
+```{r}
+hist(proba, breaks = 50, prob = T, xlab = 'x', ylab = 'f(x)',
+     main = 'Histogram i gęstość prawdopodobieństwa')
+curve(dnorm(x, mean = 2, sd = 3), add = T, col = 'red', -15, 15)
+grid()
+```
+
+* Dystrybuanta empiryczna i teoretyczna:
+```{r}
+plot(ecdf(proba), xlab = 'x', ylab = 'F(x)', main = 'Dystrybuanta', col = 'blue')
+curve(pnorm(x, mean = 2, sd = 3), add = T, col = 'red', -15, 15)
+grid()
+
+legend('topleft', c('empiryczna', 'teoretyczna'),
+    col = c('blue', 'red'), lwd = 1)
+```
+
+* Wykres pudełkowy:
+```{r}
+boxplot(proba, col = 'green', xlab = 'dane', ylab = 'Wartości próbek', main = 'Wykres pudełkowy')
+grid()
+```
+
+* Teoretyczne i empiryczne wartości kwantyli dla 0.25,0.5 i 0.75:
+```{r}
+q_theor = qnorm(c(0.25, 0.5, 0.75), mean = 2, sd = 3)
+q_empir = quantile(proba, c(0.25, 0.5, 0.75))
+```
+
+Kwartyle teoretyczne: `r round(q_theor, digits = 4)`.
+
+Kwartyle empiryczne: `r round(q_empir, digits = 4)`.
+
+***
+
+# Przykład 4
+
+* Generacja 1000 próbek z rozkładu Poissona Pois(4):
+```{r}
+M = 1000
+proba = rpois(M, lambda = 4)
+```
+
+* Wartości parametrów z próby:
+```{r, echo = TRUE}
+m = mean(proba); v = var(proba)
+```
+
+Wyestymowane parametry rozkładu wynoszą: wartość średnia `r round(m, digits = 4)`, wariancja `r round(v, digits = 4)`.
+
+* Wykres próbek:
+```{r}
+plot(proba, xlab = 'Numer próbki', ylab = 'Wartość próbki',
+      main = 'Wartości wygenerowanych próbek')
+grid()
+```
+
+* Empiryczna funkcja prawdopodobieństwa:
+```{r}
+Arg = 0:max(proba)
+Freq = as.numeric(table(factor(proba, levels = Arg))) / M
+plot(Freq ~ Arg, type = 'h', col = 'blue', xlab = 'x', ylab = 'f(x)',
+    main = paste0('Funkcja prawdopodobieństwa dla M = ', M))
+grid()
+points(Freq ~ Arg, col = 'blue')
+```
+
+* Teoretyczna funkcja prawdopodobieństwa:
+```{r}
+plot(Freq ~ Arg, type = 'h', col = 'blue', xlab = 'x', ylab = 'f(x)',
+    main = paste0('Funkcja prawdopodobieństwa dla M = ', M))
+grid()
+points(Freq ~ Arg, col = 'blue')
+
+lines(dpois(Arg, lambda = 4) ~ Arg, type = 'h', col = 'red',
+      xlab = 'x', ylab = 'f(x)')
+points(dpois(Arg, lambda = 4) ~ Arg, col = 'red')
+
+legend('topright', c('empiryczna', 'teoretyczna'),
+    col = c('blue', 'red'), lwd = 1)
+```
+
+* Dystrybuanta empiryczna:
+```{r}
+plot(cumsum(Freq) ~ Arg, type = 's', col = 'blue',
+    xlab = 'x', ylab = 'F(x)', main = paste0('Dystrybuanta dla M = ', M)) 
+grid()
+points(cumsum(Freq) ~ Arg, col = 'blue')
+```
+
+* Dystrybuanta empiryczna i teoretyczna:
+```{r}
+plot(cumsum(Freq) ~ Arg, type = 's', col = 'blue',
+    xlab = 'x', ylab = 'F(x)', main = paste0('Dystrybuanta dla M = ', M)) 
+grid()
+points(cumsum(Freq) ~ Arg, col = 'blue')
+
+lines(ppois(Arg, lambda = 4) ~ Arg, type = 's', col = 'red',
+      xlab = 'x', ylab = 'F(x)')
+points(ppois(Arg, lambda = 4) ~ Arg, col = 'red')
+
+legend('topleft', c('empiryczna', 'teoretyczna'),
+    col = c('blue', 'red'), lwd = 1)
+```
+
+* Dystrybuanta empiryczna wyznaczona za pomocą ecdf() z dystrybuantą teoretyczną:
+```{r}
+plot(ecdf(proba), col = 'blue', xlab = 'x', ylab = 'F(x)', main = 'Dystrybuanta empiryczna (ecdf)')
+lines(ppois(Arg, lambda = 4) ~ Arg, type = 's', col = 'red',
+      xlab = 'x', ylab = 'F(x)')
+points(ppois(Arg, lambda = 4) ~ Arg, col = 'red')
+
+grid()
+legend('topleft', c('empiryczna', 'teoretyczna'),
+    col = c('blue', 'red'), lwd = 1)
+```

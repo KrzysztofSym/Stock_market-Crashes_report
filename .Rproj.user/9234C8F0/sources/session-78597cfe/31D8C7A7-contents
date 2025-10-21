@@ -1,0 +1,209 @@
+# ---
+title: "ADPS 2025Z --- Laboratorium 1 (rozwiązania)"
+author: "Tu wpisz imię i nazwisko"
+output:
+  pdf_document: 
+    latex_engine: xelatex
+  html_notebook: default
+  html_document: default
+---
+
+```{r, echo=FALSE}
+pdf.options(encoding='ISOLatin2')
+```
+
+# Zadanie 1 (1 pkt)
+
+## Treść zadania
+
+Dla danych z ostatnich 18 miesięcy dotyczących wybranych dwóch spółek giełdowych:
+
+-   sporządź wykresy procentowych zmian kursów zamknięcia w zależności od daty,
+
+-   wykreśl i porównaj histogramy procentowych zmian kursów zamknięcia,
+
+-   wykonaj jeden wspólny rysunek z wykresami pudełkowymi zmian kursów zamknięcia.
+
+## Rozwiązanie
+
+```{r}
+# https://stooq.pl/q/d/l/?s=kgh&i=d
+Ticket_KGH = 'KGH'
+webLink = paste0('https://stooq.pl/q/d/l/?s=', Ticket_KGH, '&i=d')
+fileName = paste0(Ticket_KGH, '.csv')
+if(!file.exists(fileName)) {
+download.file(webLink, fileName)
+}
+df_KGH = read.csv('KGH.csv')
+df_KGH$Data = as.Date(df_KGH$Data)
+df_KGH$Zamkniecie_zm = with(df_KGH, c(NA, 100*diff(Zamkniecie)/Zamkniecie[-length(Zamkniecie)]))
+df_KGH_18m = df_KGH[which(df_KGH$Data >= '2024-04-19' & df_KGH$Data <= Sys.Date()),]
+plot(Zamkniecie_zm ~ Data, df_KGH_18m, type = 'l', col = 'green', xlab = 'Data',
+ylab = 'Procentowa zmiana kursu zamknięcia [%]', main = 'KGHM')
+grid()
+```
+```{r}
+# https://stooq.pl/q/d/l/?s=kgh&i=d
+Ticket_PKO = 'PKO'
+webLink = paste0('https://stooq.pl/q/d/l/?s=', Ticket_PKO, '&i=d')
+fileName = paste0(Ticket_PKO, '.csv')
+if(!file.exists(fileName)) {
+download.file(webLink, fileName)
+}
+df_PKO = read.csv('PKO.csv')
+df_PKO$Data = as.Date(df_PKO$Data)
+df_PKO$Zamkniecie_zm = with(df_PKO, c(NA, 100*diff(Zamkniecie)/Zamkniecie[-length(Zamkniecie)]))
+df_PKO_18m = df_PKO[which(df_PKO$Data >= '2024-04-19' & df_PKO$Data <= Sys.Date()),]
+plot(Zamkniecie_zm ~ Data, df_PKO_18m, type = 'l', col = 'blue', xlab = 'Data',
+ylab = 'Procentowa zmiana kursu zamknięcia [%]', main = 'PKO')
+grid()
+```
+```{r}
+hist(df_KGH_18m$Zamkniecie_zm, breaks = 50, prob = T,
+xlab = 'Zmiana kursu zamknięcia [%] ',
+ylab = 'Częstość występowania',
+main = paste('Histogram procentowych zmian kursu', 'KGHM') )
+grid()
+```
+```{r}
+hist(df_PKO_18m$Zamkniecie_zm, breaks = 50, prob = T,
+xlab = 'Zmiana kursu zamknięcia [%] ',
+ylab = 'Częstość występowania',
+main = paste('Histogram procentowych zmian kursu', 'PKO') )
+grid()
+```
+```{r}
+boxplot(df_KGH_18m$Zamkniecie_zm,
+        df_PKO_18m$Zamkniecie_zm,
+        names = c("KGHM", "PKO"),
+        col = c("green", "blue"),
+        ylab = "Zmiana kursu zamknięcia [%]",
+        main = "Porównanie zmian kursu zamknięcia")
+grid()
+```
+------------------------------------------------------------------------
+
+# Zadanie 2 (1,5 pkt)
+
+## Treść zadania
+
+1.  Sporządź wykres liczby katastrof lotniczych w poszczególnych:
+
+-   miesiącach roku (styczeń - grudzień),
+```{r}
+kat = read.csv('crashes.csv')
+# Dodanie do danych kolumny z miesiącem:
+kat$Month = strftime(as.Date(kat$Date, '%m/%d/%Y'), '%m')
+# Wykres liczby wypadków w poszczególnych miesiącach:
+plot(table(kat$Month), type = 'h', col = 'blue', xlab = 'Miesiąc',
+ylab = 'Liczba katastrof', main = 'Liczba katastrof w poszczególnych miesiącach' )
+grid()
+```
+
+-   dniach miesiąca (1-31),
+```{r}
+
+# Dodanie do danych kolumny z dniem:
+kat$Day = strftime(as.Date(kat$Date, '%m/%d/%Y'), '%d')
+# Wykres liczby wypadków w danym dniu miesiąca:
+plot(table(kat$Day), type = 'h', col = 'blue', xlab = 'Dzień miesiąca',
+ylab = 'Liczba katastrof', main = 'Liczba katastrof w poszczególnych dniach miesiąca' )
+grid()
+```
+
+-   dniach tygodnia (weekdays()).
+```{r}
+try(Sys.setlocale("LC_TIME", "pl_PL.UTF-8"), silent = TRUE)
+# Dodanie do danych kolumny z dniem tygodnia:
+kat$Weekday = weekdays(as.Date(kat$Date, '%m/%d/%Y'), abbreviate = TRUE)
+#unique(kat$Weekday)
+
+# Wykres liczby wypadków w danym dniu miesiąca:
+plot(table(kat$Weekday), type = 'h', col = 'blue', xlab = 'Dzień tygodnia',
+ylab = 'Liczba katastrof', main = 'Liczba katastrof w poszczególnych dniach tygodnia' )
+grid()
+
+```
+```{r}
+try(Sys.setlocale("LC_TIME", "pl_PL.UTF-8"), silent = TRUE)
+# Dodanie do danych kolumny z dniem tygodnia:
+kat$Weekday <- weekdays(as.Date(kat$Date, '%m/%d/%Y'), abbreviate = TRUE)
+
+# Ustawienie właściwej kolejności dni tygodnia (zgodnie z Twoimi nazwami)
+kat$Weekday <- factor(kat$Weekday,
+                      levels = c("pon.", "wt.", "śr.", "czw.", "pt.", "sob.", "niedz."))
+
+# Wykres liczby wypadków w danym dniu tygodnia:
+plot(table(kat$Weekday),
+     type = 'h',
+     col = 'blue',
+     xlab = 'Dzień tygodnia',
+     ylab = 'Liczba katastrof',
+     main = 'Liczba katastrof w poszczególnych dniach tygodnia')
+grid()
+
+```
+
+2.  Narysuj jak w kolejnych latach zmieniały się:
+
+-   liczba osób, które przeżyły katastrofy,
+```{r}
+kat$Year = strftime(as.Date(kat$Date, '%m/%d/%Y'), '%Y')
+# Agregacja danych po latach:
+Ocaleni = aggregate((Aboard - Fatalities) ~ Year, kat, FUN = sum)
+
+# Wykres:
+plot(Ocaleni, type = 'h', col = 'blue',xlab = 'Rok',
+ylab = 'Lczba ocalałych', main = 'Liczba osób, które przeżyły katastrofy' )
+grid()
+```
+-   odsetek osób (w procentach), które przeżyły katastrofy.
+```{r}
+# kat$Year = strftime(as.Date(kat$Date, '%m/%d/%Y'), '%Y')
+# Agregacja danych po latach:
+Odsetek_ocalałych = aggregate((((Aboard - Fatalities)/Aboard)*100) ~ Year, kat, FUN = sum)
+# Wykres:
+plot(Odsetek_ocalałych, type = 'h', col = 'blue',xlab = 'Rok',
+ylab = 'Odsetek ocalałych', main = 'Odsetek osób, które przeżyły katastrofy' )
+grid()
+```
+
+## Rozwiązanie
+
+Tu umieść swoje rozwiązanie
+
+------------------------------------------------------------------------
+
+# Zadanie 3 (1 pkt)
+
+## Treść zadania
+
+1.  Dla dwóch różnych zestawów parametrów rozkładu dwumianowego (rbinom):
+
+-   Binom(20,0.2)
+
+-   Binom(20,0.8)
+
+wygeneruj próby losowe składające się z M = 1000 próbek i narysuj wartości wygenerowanych danych.
+
+2.  Dla każdego z rozkładów narysuj na jednym rysunku empiryczne i teoretyczne (użyj funkcji dbinom) funkcje prawdopodobieństwa, a na drugim rysunku empiryczne i teoretyczne (użyj funkcji pbinom) dystrybuanty. W obu przypadkach wyskaluj oś odciętych od 0 do 20.
+
+## Rozwiązanie
+
+Tu umieść swoje rozwiązanie
+
+------------------------------------------------------------------------
+
+# Zadanie 4 (1,5 pkt)
+
+## Treść zadania
+
+1.  Dla rozkładu dwumianowego Binom(20, 0.2) wygeneruj trzy próby losowe składające się z M = 100, 1000 i 10000 próbek.
+
+2.  Dla poszczególnych prób wykreśl empiryczne i teoretyczne funkcje prawdopodobieństwa, a także empiryczne i teoretyczne dystrybuanty.
+
+3.  We wszystkich przypadkach oblicz empiryczne wartości średnie i wariancje. Porównaj je ze sobą oraz z wartościami teoretycznymi dla rozkładu Binom(20, 0.2).
+
+## Rozwiązanie
+
+Tu umieść swoje rozwiązanie
