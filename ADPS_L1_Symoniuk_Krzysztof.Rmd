@@ -196,23 +196,56 @@ plot(proba_2)
 M = 1000
 n = 20
 Arg = 0:n
-Freq = as.numeric(table(factor(proba_1, levels = Arg))) / M
-teor = dbinom(Arg, n, 0.2)
-plot(Freq ~ Arg, type = 'h', col = 'blue', xlab = 'x', ylab = 'f(x)',
-main = paste0('Funkcja prawdopodobieństwa dla M = ', M))
-grid()
-points(Freq ~ Arg, col = 'blue')
-```
+Freq_1 = as.numeric(table(factor(proba_1, levels = Arg))) / M
+teor_1 = dbinom(Arg, n, 0.2)
 
-```{r}
-plot(Freq ~ Arg, type = 'h', col = 'blue', xlab = 'x', ylab = 'f(x)',
-main = paste0('Funkcja prawdopodobieństwa dla M = ', M))
+plot(Freq_1 ~ Arg, type = 'h', col = 'blue', xlab = 'x', ylab = 'f(x)',
+main = paste0('Funkcja prawdopodobieństwa rozkładu_1 dla M = ', M))
 grid()
-points(Freq ~ Arg, col = 'blue')
-lines(teor ~ Arg, type = 'h', col = 'red',
+points(Freq_1 ~ Arg, col = 'blue')
+lines(teor_1 ~ Arg, type = 'h', col = 'red',
 xlab = 'x', ylab = 'f(x)')
-points(teor ~ Arg, col = 'red')
+points(teor_1 ~ Arg, col = 'red')
 legend('topright', c('empiryczna', 'teoretyczna'),
+col = c('blue', 'red'), lwd = 1)
+```
+```{r}
+Freq_2 = as.numeric(table(factor(proba_2, levels = Arg))) / M
+teor_2 = dbinom(Arg, n, 0.8)
+
+plot(Freq_2 ~ Arg, type = 'h', col = 'blue', xlab = 'x', ylab = 'f(x)',
+main = paste0('Funkcja prawdopodobieństwa rozkładu_2 dla M = ', M))
+grid()
+points(Freq_2 ~ Arg, col = 'blue')
+lines(teor_2 ~ Arg, type = 'h', col = 'red',
+xlab = 'x', ylab = 'f(x)')
+points(teor_2 ~ Arg, col = 'red')
+legend('topleft', c('empiryczna', 'teoretyczna'),
+col = c('blue', 'red'), lwd = 1)
+```
+```{r}
+teor_1b = pbinom(Arg, n, 0.2, lower.tail = TRUE, log.p = FALSE)
+Freq_1b = as.numeric(table(factor(proba_1, levels = Arg))) / M
+plot(Freq_1 ~ Arg, type = 's', col = 'blue',
+xlab = 'x', ylab = 'F(x)', main = paste0('Dystrybuanta dla M = ', M))
+grid()
+points(Freq_1 ~ Arg, col = 'blue')
+lines(teor_1b ~ Arg, type = 's', col = 'red',
+xlab = 'x', ylab = 'F(x)')
+points(teor_1b ~ Arg, col = 'red')
+legend('topright', c('empiryczna', 'teoretyczna'),
+col = c('blue', 'red'), lwd = 1)
+```
+```{r}
+teor_2b = pbinom(Arg, n, 0.8, lower.tail = TRUE, log.p = FALSE)
+plot(Freq_2 ~ Arg, type = 's', col = 'blue',
+xlab = 'x', ylab = 'F(x)', main = paste0('Dystrybuanta dla M = ', M))
+grid()
+points(Freq_2 ~ Arg, col = 'blue')
+lines(teor_2b ~ Arg, type = 's', col = 'red',
+xlab = 'x', ylab = 'F(x)')
+points(teor_2b ~ Arg, col = 'red')
+legend('topleft', c('empiryczna', 'teoretyczna'),
 col = c('blue', 'red'), lwd = 1)
 ```
 ------------------------------------------------------------------------
@@ -222,7 +255,18 @@ col = c('blue', 'red'), lwd = 1)
 ## Treść zadania
 
 1.  Dla rozkładu dwumianowego Binom(20, 0.2) wygeneruj trzy próby losowe składające się z M = 100, 1000 i 10000 próbek.
-
+```{r}
+proba_100 = rbinom(100, 20, 0.2)
+plot(proba_100)
+```
+```{r}
+proba_1000 = rbinom(1000, 20, 0.2)
+plot(proba_1000)
+```
+```{r}
+# proba_10000 = rbinom(10000, 20, 0.2)
+plot(proba_10000)
+```
 2.  Dla poszczególnych prób wykreśl empiryczne i teoretyczne funkcje prawdopodobieństwa, a także empiryczne i teoretyczne dystrybuanty.
 
 3.  We wszystkich przypadkach oblicz empiryczne wartości średnie i wariancje. Porównaj je ze sobą oraz z wartościami teoretycznymi dla rozkładu Binom(20, 0.2).
