@@ -182,13 +182,39 @@ Tu umieść swoje rozwiązanie
 -   Binom(20,0.8)
 
 wygeneruj próby losowe składające się z M = 1000 próbek i narysuj wartości wygenerowanych danych.
+```{r}
+proba_1 = rbinom(1000, 20, 0.2)
+plot(proba_1)
+proba_2 = rbinom(1000, 20, 0.8)
+plot(proba_2)
+```
 
 2.  Dla każdego z rozkładów narysuj na jednym rysunku empiryczne i teoretyczne (użyj funkcji dbinom) funkcje prawdopodobieństwa, a na drugim rysunku empiryczne i teoretyczne (użyj funkcji pbinom) dystrybuanty. W obu przypadkach wyskaluj oś odciętych od 0 do 20.
 
 ## Rozwiązanie
+```{r}
+M = 1000
+n = 20
+Arg = 0:n
+Freq = as.numeric(table(factor(proba_1, levels = Arg))) / M
+teor = dbinom(Arg, n, 0.2)
+plot(Freq ~ Arg, type = 'h', col = 'blue', xlab = 'x', ylab = 'f(x)',
+main = paste0('Funkcja prawdopodobieństwa dla M = ', M))
+grid()
+points(Freq ~ Arg, col = 'blue')
+```
 
-Tu umieść swoje rozwiązanie
-
+```{r}
+plot(Freq ~ Arg, type = 'h', col = 'blue', xlab = 'x', ylab = 'f(x)',
+main = paste0('Funkcja prawdopodobieństwa dla M = ', M))
+grid()
+points(Freq ~ Arg, col = 'blue')
+lines(teor ~ Arg, type = 'h', col = 'red',
+xlab = 'x', ylab = 'f(x)')
+points(teor ~ Arg, col = 'red')
+legend('topright', c('empiryczna', 'teoretyczna'),
+col = c('blue', 'red'), lwd = 1)
+```
 ------------------------------------------------------------------------
 
 # Zadanie 4 (1,5 pkt)
