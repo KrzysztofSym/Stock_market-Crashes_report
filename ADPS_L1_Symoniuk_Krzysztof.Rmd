@@ -91,9 +91,17 @@ grid()
 
 -   miesiącach roku (styczeń - grudzień),
 ```{r}
+Sys.setlocale("LC_TIME", "pl_PL.UTF-8")
 kat = read.csv('crashes.csv')
 # Dodanie do danych kolumny z miesiącem:
-kat$Month = strftime(as.Date(kat$Date, '%m/%d/%Y'), '%m')
+kat$Month = strftime(as.Date(kat$Date, '%m/%d/%Y'), '%b')
+
+miesiace_pl <- c("sty", "lut", "mar", "kwi", "maj", "cze",
+                 "lip", "sie", "wrz", "paź", "lis", "gru")
+
+kat$Month <- factor(kat$Month, levels = miesiace_pl, ordered = TRUE)
+
+
 # Wykres liczby wypadków w poszczególnych miesiącach:
 plot(table(kat$Month), type = 'h', col = 'blue', xlab = 'Miesiąc',
 ylab = 'Liczba katastrof', main = 'Liczba katastrof w poszczególnych miesiącach' )
@@ -131,7 +139,7 @@ kat$Weekday <- weekdays(as.Date(kat$Date, '%m/%d/%Y'), abbreviate = TRUE)
 
 # Ustawienie właściwej kolejności dni tygodnia (zgodnie z Twoimi nazwami)
 kat$Weekday <- factor(kat$Weekday,
-                      levels = c("pon.", "wt.", "śr.", "czw.", "pt.", "sob.", "niedz."))
+                      levels = c("pon", "wto", "śro", "czw", "pią", "sob", "nie"))
 
 # Wykres liczby wypadków w danym dniu tygodnia:
 plot(table(kat$Weekday),
@@ -225,23 +233,24 @@ col = c('blue', 'red'), lwd = 1)
 ```
 ```{r}
 teor_1b = pbinom(Arg, n, 0.2, lower.tail = TRUE, log.p = FALSE)
-Freq_1b = as.numeric(table(factor(proba_1, levels = Arg))) / M
-plot(Freq_1 ~ Arg, type = 's', col = 'blue',
+Freq_1b = cumsum(as.numeric(table(factor(proba_1, levels = Arg))) / M)
+plot(Freq_1b ~ Arg, type = 's', col = 'blue',
 xlab = 'x', ylab = 'F(x)', main = paste0('Dystrybuanta dla M = ', M))
 grid()
-points(Freq_1 ~ Arg, col = 'blue')
+points(Freq_1b ~ Arg, col = 'blue')
 lines(teor_1b ~ Arg, type = 's', col = 'red',
 xlab = 'x', ylab = 'F(x)')
 points(teor_1b ~ Arg, col = 'red')
-legend('topright', c('empiryczna', 'teoretyczna'),
+legend('bottomright', c('empiryczna', 'teoretyczna'),
 col = c('blue', 'red'), lwd = 1)
 ```
 ```{r}
 teor_2b = pbinom(Arg, n, 0.8, lower.tail = TRUE, log.p = FALSE)
-plot(Freq_2 ~ Arg, type = 's', col = 'blue',
+Freq_2b = cumsum(as.numeric(table(factor(proba_2, levels = Arg))) / M)
+plot(Freq_2b ~ Arg, type = 's', col = 'blue',
 xlab = 'x', ylab = 'F(x)', main = paste0('Dystrybuanta dla M = ', M))
 grid()
-points(Freq_2 ~ Arg, col = 'blue')
+points(Freq_2b ~ Arg, col = 'blue')
 lines(teor_2b ~ Arg, type = 's', col = 'red',
 xlab = 'x', ylab = 'F(x)')
 points(teor_2b ~ Arg, col = 'red')
@@ -264,13 +273,109 @@ proba_1000 = rbinom(1000, 20, 0.2)
 plot(proba_1000)
 ```
 ```{r}
-# proba_10000 = rbinom(10000, 20, 0.2)
+proba_10000 = rbinom(10000, 20, 0.2)
 plot(proba_10000)
 ```
 2.  Dla poszczególnych prób wykreśl empiryczne i teoretyczne funkcje prawdopodobieństwa, a także empiryczne i teoretyczne dystrybuanty.
+```{r}
+M_100 = 100
+n = 20
+Arg = 0:n
+Freq_100 = as.numeric(table(factor(proba_100, levels = Arg))) / M_100
+teor_100 = dbinom(Arg, n, 0.2)
 
+plot(Freq_100 ~ Arg, type = 'h', col = 'blue', xlab = 'x', ylab = 'f(x)',
+main = paste0('Funkcja prawdopodobieństwa rozkładu_1 dla M = ', M_100))
+grid()
+points(Freq_100 ~ Arg, col = 'blue')
+lines(teor_100 ~ Arg, type = 'h', col = 'red',
+xlab = 'x', ylab = 'f(x)')
+points(teor_100 ~ Arg, col = 'red')
+legend('topright', c('empiryczna', 'teoretyczna'),
+col = c('blue', 'red'), lwd = 1)
+```
+```{r}
+M_1000 = 1000
+n = 20
+Arg = 0:n
+Freq_1000 = as.numeric(table(factor(proba_1000, levels = Arg))) / M_1000
+teor_1000 = dbinom(Arg, n, 0.2)
+
+plot(Freq_1000 ~ Arg, type = 'h', col = 'blue', xlab = 'x', ylab = 'f(x)',
+main = paste0('Funkcja prawdopodobieństwa rozkładu_1 dla M = ', M_1000))
+grid()
+points(Freq_1000 ~ Arg, col = 'blue')
+lines(teor_1000 ~ Arg, type = 'h', col = 'red',
+xlab = 'x', ylab = 'f(x)')
+points(teor_1000 ~ Arg, col = 'red')
+legend('topright', c('empiryczna', 'teoretyczna'),
+col = c('blue', 'red'), lwd = 1)
+```
+```{r}
+M_10000 = 10000
+n = 20
+Arg = 0:n
+Freq_10000 = as.numeric(table(factor(proba_10000, levels = Arg))) / M_10000
+teor_10000 = dbinom(Arg, n, 0.2)
+
+plot(Freq_10000 ~ Arg, type = 'h', col = 'blue', xlab = 'x', ylab = 'f(x)',
+main = paste0('Funkcja prawdopodobieństwa rozkładu_1 dla M = ', M_10000))
+grid()
+points(Freq_10000 ~ Arg, col = 'blue')
+lines(teor_10000 ~ Arg, type = 'h', col = 'red',
+xlab = 'x', ylab = 'f(x)')
+points(teor_10000 ~ Arg, col = 'red')
+legend('topright', c('empiryczna', 'teoretyczna'),
+col = c('blue', 'red'), lwd = 1)
+```
+```{r}
+teor_100b = pbinom(Arg, n, 0.2, lower.tail = TRUE, log.p = FALSE)
+Freq_100b = cumsum(as.numeric(table(factor(proba_100, levels = Arg))) / M_100)
+plot(Freq_100b ~ Arg, type = 's', col = 'blue',
+xlab = 'x', ylab = 'F(x)', main = paste0('Dystrybuanta dla M = ', M_100))
+grid()
+points(Freq_100b ~ Arg, col = 'blue')
+lines(teor_100b ~ Arg, type = 's', col = 'red',
+xlab = 'x', ylab = 'F(x)')
+points(teor_100b ~ Arg, col = 'red')
+legend('bottomright', c('empiryczna', 'teoretyczna'),
+col = c('blue', 'red'), lwd = 1)
+```
+```{r}
+teor_1000b = pbinom(Arg, n, 0.2, lower.tail = TRUE, log.p = FALSE)
+Freq_1000b = cumsum(as.numeric(table(factor(proba_1000, levels = Arg))) / M_1000)
+plot(Freq_1000b ~ Arg, type = 's', col = 'blue',
+xlab = 'x', ylab = 'F(x)', main = paste0('Dystrybuanta dla M = ', M_1000))
+grid()
+points(Freq_1000b ~ Arg, col = 'blue')
+lines(teor_1000b ~ Arg, type = 's', col = 'red',
+xlab = 'x', ylab = 'F(x)')
+points(teor_1000b ~ Arg, col = 'red')
+legend('bottomright', c('empiryczna', 'teoretyczna'),
+col = c('blue', 'red'), lwd = 1)
+```
+```{r}
+teor_10000b = pbinom(Arg, n, 0.2, lower.tail = TRUE, log.p = FALSE)
+Freq_10000b = cumsum(as.numeric(table(factor(proba_10000, levels = Arg))) / M_10000)
+plot(Freq_10000b ~ Arg, type = 's', col = 'blue',
+xlab = 'x', ylab = 'F(x)', main = paste0('Dystrybuanta dla M = ', M_10000))
+grid()
+points(Freq_10000b ~ Arg, col = 'blue')
+lines(teor_10000b ~ Arg, type = 's', col = 'red',
+xlab = 'x', ylab = 'F(x)')
+points(teor_10000b ~ Arg, col = 'red')
+legend('bottomright', c('empiryczna', 'teoretyczna'),
+col = c('blue', 'red'), lwd = 1)
+```
 3.  We wszystkich przypadkach oblicz empiryczne wartości średnie i wariancje. Porównaj je ze sobą oraz z wartościami teoretycznymi dla rozkładu Binom(20, 0.2).
 
 ## Rozwiązanie
 
-Tu umieść swoje rozwiązanie
+```{r}
+mean(proba_100)
+var(proba_100)
+mean(proba_1000)
+var(proba_1000)
+mean(proba_10000)
+var(proba_10000)
+```
