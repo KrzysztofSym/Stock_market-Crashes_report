@@ -1,6 +1,6 @@
-<!-- # --- -->
+---
 title: "ADPS 2025Z --- Laboratorium 1 (rozwiązania)"
-author: "Tu wpisz imię i nazwisko"
+author: "Krzysztof Symoniuk"
 output:
   pdf_document: 
     latex_engine: xelatex
@@ -90,6 +90,15 @@ grid()
 1.  Sporządź wykres liczby katastrof lotniczych w poszczególnych:
 
 -   miesiącach roku (styczeń - grudzień),
+-   dniach miesiąca (1-31),
+-   dniach tygodnia (weekdays()).
+
+2.  Narysuj jak w kolejnych latach zmieniały się:
+
+-   liczba osób, które przeżyły katastrofy,
+-   odsetek osób (w procentach), które przeżyły katastrofy.
+
+## Rozwiązanie
 ```{r}
 Sys.setlocale("LC_TIME", "pl_PL.UTF-8")
 kat = read.csv('crashes.csv')
@@ -108,30 +117,16 @@ ylab = 'Liczba katastrof', main = 'Liczba katastrof w poszczególnych miesiącac
 grid()
 ```
 
--   dniach miesiąca (1-31),
 ```{r}
 
 # Dodanie do danych kolumny z dniem:
 kat$Day = strftime(as.Date(kat$Date, '%m/%d/%Y'), '%d')
 # Wykres liczby wypadków w danym dniu miesiąca:
-plot(table(kat$Day), type = 'h', col = 'blue', xlab = 'Dzień miesiąca',
+plot(table(kat$Day), type = 'h', col = 'blue', xlab = 'Dzień_miesiąca',
 ylab = 'Liczba katastrof', main = 'Liczba katastrof w poszczególnych dniach miesiąca' )
 grid()
 ```
 
--   dniach tygodnia (weekdays()).
-```{r}
-try(Sys.setlocale("LC_TIME", "pl_PL.UTF-8"), silent = TRUE)
-# Dodanie do danych kolumny z dniem tygodnia:
-kat$Weekday = weekdays(as.Date(kat$Date, '%m/%d/%Y'), abbreviate = TRUE)
-#unique(kat$Weekday)
-
-# Wykres liczby wypadków w danym dniu miesiąca:
-plot(table(kat$Weekday), type = 'h', col = 'blue', xlab = 'Dzień tygodnia',
-ylab = 'Liczba katastrof', main = 'Liczba katastrof w poszczególnych dniach tygodnia' )
-grid()
-
-```
 ```{r}
 try(Sys.setlocale("LC_TIME", "pl_PL.UTF-8"), silent = TRUE)
 # Dodanie do danych kolumny z dniem tygodnia:
@@ -139,22 +134,19 @@ kat$Weekday <- weekdays(as.Date(kat$Date, '%m/%d/%Y'), abbreviate = TRUE)
 
 # Ustawienie właściwej kolejności dni tygodnia (zgodnie z Twoimi nazwami)
 kat$Weekday <- factor(kat$Weekday,
-                      levels = c("pon", "wto", "śro", "czw", "pią", "sob", "nie"))
-
+                      #levels = c("pon", "wto", "śro", "czw", "pią", "sob", "nie"))
+                      levels = c("pon.", "wt.", "śr.", "czw.", "pt.", "sob.", "niedz."))
 # Wykres liczby wypadków w danym dniu tygodnia:
 plot(table(kat$Weekday),
      type = 'h',
      col = 'blue',
-     xlab = 'Dzień tygodnia',
+     xlab = 'Dzień_tygodnia',
      ylab = 'Liczba katastrof',
      main = 'Liczba katastrof w poszczególnych dniach tygodnia')
 grid()
 
 ```
 
-2.  Narysuj jak w kolejnych latach zmieniały się:
-
--   liczba osób, które przeżyły katastrofy,
 ```{r}
 kat$Year = strftime(as.Date(kat$Date, '%m/%d/%Y'), '%Y')
 # Agregacja danych po latach:
@@ -164,7 +156,6 @@ plot(Ocaleni, type = 'h', col = 'blue',xlab = 'Rok',
 ylab = 'Lczba ocalałych', main = 'Liczba osób, które przeżyły katastrofy' )
 grid()
 ```
--   odsetek osób (w procentach), które przeżyły katastrofy.
 ```{r}
 Odsetek_ocalonych = aggregate(((Aboard - Fatalities) / Aboard * 100) ~ Year, kat, FUN = mean)
 plot(Odsetek_ocalonych, type = 'h', col = 'blue',
@@ -173,9 +164,6 @@ plot(Odsetek_ocalonych, type = 'h', col = 'blue',
 )
 grid()
 ```
-## Rozwiązanie
-
-Tu umieść swoje rozwiązanie
 
 ------------------------------------------------------------------------
 
@@ -190,6 +178,10 @@ Tu umieść swoje rozwiązanie
 -   Binom(20,0.8)
 
 wygeneruj próby losowe składające się z M = 1000 próbek i narysuj wartości wygenerowanych danych.
+
+2.  Dla każdego z rozkładów narysuj na jednym rysunku empiryczne i teoretyczne (użyj funkcji dbinom) funkcje prawdopodobieństwa, a na drugim rysunku empiryczne i teoretyczne (użyj funkcji pbinom) dystrybuanty. W obu przypadkach wyskaluj oś odciętych od 0 do 20.
+
+## Rozwiązanie
 ```{r}
 proba_1 = rbinom(1000, 20, 0.2)
 plot(proba_1)
@@ -197,9 +189,6 @@ proba_2 = rbinom(1000, 20, 0.8)
 plot(proba_2)
 ```
 
-2.  Dla każdego z rozkładów narysuj na jednym rysunku empiryczne i teoretyczne (użyj funkcji dbinom) funkcje prawdopodobieństwa, a na drugim rysunku empiryczne i teoretyczne (użyj funkcji pbinom) dystrybuanty. W obu przypadkach wyskaluj oś odciętych od 0 do 20.
-
-## Rozwiązanie
 ```{r}
 M = 1000
 n = 20
@@ -264,6 +253,12 @@ col = c('blue', 'red'), lwd = 1)
 ## Treść zadania
 
 1.  Dla rozkładu dwumianowego Binom(20, 0.2) wygeneruj trzy próby losowe składające się z M = 100, 1000 i 10000 próbek.
+2.  Dla poszczególnych prób wykreśl empiryczne i teoretyczne funkcje prawdopodobieństwa, a także empiryczne i teoretyczne dystrybuanty.
+3.  We wszystkich przypadkach oblicz empiryczne wartości średnie i wariancje. Porównaj je ze sobą oraz z wartościami teoretycznymi dla rozkładu Binom(20, 0.2).
+
+## Rozwiązanie
+
+
 ```{r}
 proba_100 = rbinom(100, 20, 0.2)
 plot(proba_100)
@@ -276,7 +271,7 @@ plot(proba_1000)
 proba_10000 = rbinom(10000, 20, 0.2)
 plot(proba_10000)
 ```
-2.  Dla poszczególnych prób wykreśl empiryczne i teoretyczne funkcje prawdopodobieństwa, a także empiryczne i teoretyczne dystrybuanty.
+
 ```{r}
 M_100 = 100
 n = 20
@@ -367,9 +362,6 @@ points(teor_10000b ~ Arg, col = 'red')
 legend('bottomright', c('empiryczna', 'teoretyczna'),
 col = c('blue', 'red'), lwd = 1)
 ```
-3.  We wszystkich przypadkach oblicz empiryczne wartości średnie i wariancje. Porównaj je ze sobą oraz z wartościami teoretycznymi dla rozkładu Binom(20, 0.2).
-
-## Rozwiązanie
 
 ```{r}
 mean(proba_100)
@@ -378,4 +370,24 @@ mean(proba_1000)
 var(proba_1000)
 mean(proba_10000)
 var(proba_10000)
+
+n <- 20
+p <- 0.2
+
+wyniki <- data.frame(
+  Rozmiar_próby = c(100, 1000, 10000),
+  Srednia_empiryczna = c(mean(proba_100), mean(proba_1000), mean(proba_10000)),
+  Wariancja_empiryczna = c(var(proba_100), var(proba_1000), var(proba_10000)),
+  Srednia_teoretyczna = n * p,
+  Wariancja_teoretyczna = n * p * (1 - p)
+)
+wyniki_t <- as.data.frame(t(wyniki))
+colnames(wyniki_t) <- paste0("M=", wyniki$Rozmiar_próby)
+wyniki_t <- wyniki_t[-1, ]
+wyniki_t <- round(wyniki_t, 3)
+print(wyniki_t)
 ```
+
+Empiryczne wartości (z próby) będą się zbliżały do teoretycznych wraz ze wzrostem liczby prób (M).
+
+Dla małej próby (np. 100) mogą wystąpić większe odchylenia od wartości teoretycznych.
